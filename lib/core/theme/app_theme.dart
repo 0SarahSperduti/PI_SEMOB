@@ -1,38 +1,48 @@
 import 'package:flutter/material.dart';
 
-/// Identidade visual Ferret. Tokens unicos usados por todas as telas.
+/// Identidade visual Ferret. Valores extraidos do prototipo oficial.
 class AppColors {
   const AppColors._();
 
-  // Marca (superficies escuras: login e navegacao).
-  static const Color brandTop = Color(0xFF0B2338);
-  static const Color brandBottom = Color(0xFF0E3233);
-  static const Color accent = Color(0xFF4ADE80);
+  // Navegacao escura.
+  static const Color sidebar = Color(0xFF0C1A2E);
+  static const Color sidebarHover = Color(0xFF162840);
+  static const Color sidebarActive = Color(0xFF1D3A56);
+  static const Color sidebarText = Color(0xFF8FAEC8);
+
+  // Marca.
+  static const Color brandTop = sidebar;
+  static const Color brandBottom = Color(0xFF12304A);
+  static const Color accent = Color(0xFF5BAD4E);
 
   // Acao.
-  static const Color primary = Color(0xFF1D4ED8);
-  static const Color primaryDark = Color(0xFF172554);
-  static const Color secondary = Color(0xFF0EA5E9);
+  static const Color primary = Color(0xFF1B4FD8);
+  static const Color primaryHover = Color(0xFF1540B8);
+  static const Color secondary = Color(0xFF4F46E5);
 
   static const Color success = Color(0xFF16A34A);
   static const Color warning = Color(0xFFF59E0B);
-  static const Color danger = Color(0xFFDC2626);
+  static const Color danger = Color(0xFFEF4444);
+  static const Color teal = Color(0xFF0D9488);
+  static const Color purple = Color(0xFF7C3AED);
 
-  static const Color background = Color(0xFFEDF1F7);
+  static const Color background = Color(0xFFF0F4F9);
   static const Color surface = Color(0xFFFFFFFF);
+  static const Color surfaceMuted = Color(0xFFF1F5FB);
   static const Color border = Color(0xFFE2E8F0);
 
   static const Color textPrimary = Color(0xFF0F172A);
-  static const Color textSecondary = Color(0xFF64748B);
+  static const Color textSecondary = Color(0xFF475569);
+  static const Color textMuted = Color(0xFF94A3B8);
 
   /// Sequencia usada nos graficos (demanda, receita, creditos, frota).
   static const List<Color> chart = <Color>[
     primary,
+    accent,
     secondary,
-    success,
+    teal,
+    purple,
     warning,
-    Color(0xFF9333EA),
-    Color(0xFFEC4899),
   ];
 }
 
@@ -50,6 +60,8 @@ class AppSpacing {
   static const double radiusPill = 999;
 }
 
+/// Tipografia Inter aplicada globalmente pelo tema; aqui ficam apenas pesos e
+/// tamanhos, herdados via DefaultTextStyle.
 class AppTextStyles {
   const AppTextStyles._();
 
@@ -61,7 +73,7 @@ class AppTextStyles {
   );
 
   static const TextStyle title = TextStyle(
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
   );
@@ -73,7 +85,7 @@ class AppTextStyles {
   );
 
   static const TextStyle metric = TextStyle(
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
   );
@@ -94,11 +106,12 @@ class AppTextStyles {
     color: AppColors.textSecondary,
   );
 
+  /// Rotulo maiusculo dos cards de indicador e dos grupos de navegacao.
   static const TextStyle overline = TextStyle(
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: FontWeight.w600,
-    letterSpacing: 1.2,
-    color: AppColors.textSecondary,
+    letterSpacing: 0.8,
+    color: AppColors.textMuted,
   );
 }
 
@@ -116,6 +129,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
+      fontFamily: 'Inter',
       scaffoldBackgroundColor: AppColors.background,
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.surface,
@@ -171,11 +185,14 @@ class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surface,
-        selectedColor: AppColors.primary.withValues(alpha: 0.12),
+        selectedColor: AppColors.primary,
         side: const BorderSide(color: AppColors.border),
-        labelStyle: AppTextStyles.caption,
-        secondaryLabelStyle: AppTextStyles.caption,
-        shape: const StadiumBorder(),
+        labelStyle: AppTextStyles.label,
+        secondaryLabelStyle:
+            AppTextStyles.label.copyWith(color: Colors.white),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        ),
         showCheckmark: false,
       ),
       dataTableTheme: const DataTableThemeData(

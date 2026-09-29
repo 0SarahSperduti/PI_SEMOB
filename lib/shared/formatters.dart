@@ -4,7 +4,7 @@ final NumberFormat _inteiro = NumberFormat.decimalPattern('pt_BR');
 final NumberFormat _moeda = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 final DateFormat _data = DateFormat('dd/MM/yyyy');
 
-String fmtInteiro(num valor) => _inteiro.format(valor);
+String fmtInteiro(num valor) => _inteiro.format(valor.round());
 
 String fmtMoeda(num valor) => _moeda.format(valor);
 

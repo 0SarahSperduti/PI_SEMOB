@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/assistente/pages/assistente_page.dart';
+import '../../features/configuracoes/pages/configuracoes_page.dart';
 import '../../features/creditos/pages/creditos_page.dart';
 import '../../features/dashboard/pages/dashboard_page.dart';
 import '../../features/demanda/pages/demanda_page.dart';
 import '../../features/documentos/pages/documentos_page.dart';
 import '../../features/frota/pages/frota_page.dart';
+import '../../features/integracoes/pages/integracoes_page.dart';
 import '../../features/login/pages/login_page.dart';
 import '../../features/quilometragem/pages/quilometragem_page.dart';
 import '../../features/receita/pages/receita_page.dart';
@@ -40,6 +42,14 @@ final GoRouter appRouter = GoRouter(
         GoRoute(path: '/documentos', builder: (_, __) => const DocumentosPage()),
         GoRoute(path: '/assistente', builder: (_, __) => const AssistentePage()),
         GoRoute(path: '/relatorios', builder: (_, __) => const RelatoriosPage()),
+        GoRoute(
+          path: '/integracoes',
+          builder: (_, __) => const IntegracoesPage(),
+        ),
+        GoRoute(
+          path: '/configuracoes',
+          builder: (_, __) => const ConfiguracoesPage(),
+        ),
       ],
     ),
   ],

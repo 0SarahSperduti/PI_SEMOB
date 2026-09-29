@@ -17,15 +17,15 @@ void main() {
       ),
     );
 
-    expect(find.text('Visão geral'), findsOneWidget);
-    expect(find.text('Passageiros (dia)'), findsOneWidget);
-    expect(find.text('Receita atual'), findsOneWidget);
+    expect(find.text('PASSAGEIROS DO DIA'), findsOneWidget);
+    expect(find.text('RECEITA DO MÊS'), findsOneWidget);
     expect(find.byType(AppMetricCard), findsNWidgets(8));
 
     // Filtros de periodo disponiveis.
+    expect(find.text('Período:'), findsOneWidget);
     expect(find.text('Hoje'), findsOneWidget);
-    expect(find.text('Últimos 15 dias'), findsWidgets);
-    expect(find.text('Período personalizado'), findsOneWidget);
+    expect(find.text('Últimos 30d'), findsOneWidget);
+    expect(find.text('Personalizado'), findsOneWidget);
   });
 
   testWidgets('ativa a comparacao entre períodos', (WidgetTester tester) async {
@@ -42,6 +42,6 @@ void main() {
     await tester.tap(find.text('Comparar períodos'));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('vs. período anterior'), findsWidgets);
+    expect(find.textContaining('período anterior'), findsWidgets);
   });
 }

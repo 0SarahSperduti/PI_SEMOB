@@ -3,6 +3,8 @@
 /// quando o backend existir.
 library;
 
+import 'package:intl/intl.dart';
+
 class PontoSerie {
   const PontoSerie(this.rotulo, this.valor);
 
@@ -10,16 +12,32 @@ class PontoSerie {
   final double valor;
 }
 
+class Empresa {
+  const Empresa({
+    required this.sigla,
+    required this.nome,
+    required this.receita,
+    required this.participacao,
+  });
+
+  final String sigla;
+  final String nome;
+  final double receita;
+  final int participacao;
+}
+
 class Veiculo {
   const Veiculo({
     required this.prefixo,
+    required this.linha,
+    required this.destino,
     required this.status,
-    required this.kmDia,
   });
 
   final String prefixo;
-  final String status; // Em operacao | Garagem | Manutencao
-  final double kmDia;
+  final String linha;
+  final String destino;
+  final String status; // Em rota | Atenção | Parado
 }
 
 class LinhaOnibus {
@@ -27,174 +45,422 @@ class LinhaOnibus {
     required this.codigo,
     required this.nome,
     required this.empresa,
-    required this.veiculos,
+    required this.kmHoje,
+    required this.kmMes,
+    required this.metaMes,
+    required this.viagens,
   });
 
   final String codigo;
   final String nome;
   final String empresa;
-  final List<Veiculo> veiculos;
+  final int kmHoje;
+  final int kmMes;
+  final int metaMes;
+  final int viagens;
+
+  int get atingimento => (kmMes / metaMes * 100).round();
+  int get kmPorViagem => (kmHoje / viagens).round();
 }
 
 class DocumentoPdf {
   const DocumentoPdf({
     required this.arquivo,
-    required this.remetente,
-    required this.recebidoEm,
+    required this.empresa,
     required this.status,
+    required this.data,
+    required this.registros,
   });
 
   final String arquivo;
-  final String remetente;
-  final String recebidoEm;
-  final String status; // Recebido | Processado | Falha
+  final String empresa;
+  final String status; // Processado | Processando | Erro
+  final String data;
+  final String registros;
+}
+
+class ModeloRelatorio {
+  const ModeloRelatorio({
+    required this.icone,
+    required this.nome,
+    required this.descricao,
+  });
+
+  final String icone;
+  final String nome;
+  final String descricao;
+}
+
+class FonteDados {
+  const FonteDados({
+    required this.icone,
+    required this.nome,
+    required this.status,
+    required this.protocolo,
+    required this.detalhe,
+    required this.ultimaSync,
+    this.erro,
+  });
+
+  final String icone;
+  final String nome;
+  final String status; // Conectado | Pendente | Erro
+  final String protocolo;
+  final String detalhe;
+  final String ultimaSync;
+  final String? erro;
 }
 
 class DadosExemplo {
   const DadosExemplo._();
 
-  static const List<String> empresas = <String>[
-    'Viação Central',
-    'Expresso Norte',
-    'Rodo Sul',
+  static final DateFormat _diaMes = DateFormat('dd/MM');
+
+  /// Serie diaria dos ultimos [dias] dias, com queda nos finais de semana.
+  static List<PontoSerie> serieDiaria(double base, {int dias = 30}) {
+    final DateTime hoje = DateTime.now();
+    final List<PontoSerie> pontos = <PontoSerie>[];
+    for (int i = dias - 1; i >= 0; i--) {
+      final DateTime d = hoje.subtract(Duration(days: i));
+      final double fator = d.weekday >= 6 ? 0.52 : 0.94 + (i % 7) * 0.02;
+      pontos.add(PontoSerie(_diaMes.format(d), base * fator));
+    }
+    return pontos;
+  }
+
+  static const List<String> meses = <String>[
+    'Out/25', 'Nov/25', 'Dez/25', 'Jan/26', 'Fev/26', 'Mar/26',
+    'Abr/26', 'Mai/26', 'Jun/26', 'Jul/26', 'Ago/26', 'Set/26',
+  ];
+
+  /// Serie mensal dos 12 meses exibidos no prototipo.
+  static List<PontoSerie> serieMensal(double base) {
+    const List<double> variacao = <double>[
+      0.88, 0.92, 0.85, 0.90, 0.87, 0.95,
+      0.97, 1.00, 0.96, 0.93, 1.02, 0.99,
+    ];
+    return <PontoSerie>[
+      for (int i = 0; i < meses.length; i++)
+        PontoSerie(meses[i], base * variacao[i]),
+    ];
+  }
+
+  static const List<Empresa> empresas = <Empresa>[
+    Empresa(
+      sigla: 'ABC',
+      nome: 'AUTOBUS SCS Ltda',
+      receita: 889237,
+      participacao: 42,
+    ),
+    Empresa(
+      sigla: 'MET',
+      nome: 'METROPOLITAN Transporte',
+      receita: 741031,
+      participacao: 35,
+    ),
+    Empresa(
+      sigla: 'NSC',
+      nome: 'NOVA SCS Mobilidade',
+      receita: 486963,
+      participacao: 23,
+    ),
   ];
 
   static const List<LinhaOnibus> linhas = <LinhaOnibus>[
     LinhaOnibus(
-      codigo: '101',
-      nome: 'Centro / Terminal Norte',
-      empresa: 'Viação Central',
-      veiculos: <Veiculo>[
-        Veiculo(prefixo: '1021', status: 'Em operação', kmDia: 182.4),
-        Veiculo(prefixo: '1034', status: 'Garagem', kmDia: 0),
-        Veiculo(prefixo: '1057', status: 'Manutenção', kmDia: 12.6),
-      ],
+      codigo: 'L01',
+      nome: 'Centro / Term. Santa Paula',
+      empresa: 'AUTOBUS SCS Ltda',
+      kmHoje: 640,
+      kmMes: 21892,
+      metaMes: 20000,
+      viagens: 20,
     ),
     LinhaOnibus(
-      codigo: '204',
-      nome: 'Jardim Industrial / Centro',
-      empresa: 'Expresso Norte',
-      veiculos: <Veiculo>[
-        Veiculo(prefixo: '2210', status: 'Em operação', kmDia: 204.1),
-        Veiculo(prefixo: '2245', status: 'Em operação', kmDia: 197.8),
-      ],
+      codigo: 'L02',
+      nome: 'Term. SCS Centro / Barcelona',
+      empresa: 'AUTOBUS SCS Ltda',
+      kmHoje: 728,
+      kmMes: 24306,
+      metaMes: 20000,
+      viagens: 27,
     ),
     LinhaOnibus(
-      codigo: '318',
-      nome: 'Terminal Sul / Universidade',
-      empresa: 'Rodo Sul',
-      veiculos: <Veiculo>[
-        Veiculo(prefixo: '3301', status: 'Em operação', kmDia: 165.2),
-        Veiculo(prefixo: '3318', status: 'Garagem', kmDia: 0),
-      ],
+      codigo: 'L03',
+      nome: 'Fundação / Centro',
+      empresa: 'METROPOLITAN Transporte',
+      kmHoje: 845,
+      kmMes: 18840,
+      metaMes: 20000,
+      viagens: 26,
+    ),
+    LinhaOnibus(
+      codigo: 'L04',
+      nome: 'Cerâmica / Praça Mauá',
+      empresa: 'METROPOLITAN Transporte',
+      kmHoje: 768,
+      kmMes: 28465,
+      metaMes: 20000,
+      viagens: 25,
+    ),
+    LinhaOnibus(
+      codigo: 'L05',
+      nome: 'Nova Gerti / Term. SCS',
+      empresa: 'METROPOLITAN Transporte',
+      kmHoje: 751,
+      kmMes: 25402,
+      metaMes: 20000,
+      viagens: 24,
+    ),
+    LinhaOnibus(
+      codigo: 'L06',
+      nome: 'Prosperidade / Centro',
+      empresa: 'NOVA SCS Mobilidade',
+      kmHoje: 690,
+      kmMes: 19757,
+      metaMes: 20000,
+      viagens: 22,
+    ),
+    LinhaOnibus(
+      codigo: 'L07',
+      nome: 'Olímpico / Term. Santa Paula',
+      empresa: 'NOVA SCS Mobilidade',
+      kmHoje: 785,
+      kmMes: 28809,
+      metaMes: 20000,
+      viagens: 23,
+    ),
+    LinhaOnibus(
+      codigo: 'L08',
+      nome: 'Mauá / Term. SCS Centro',
+      empresa: 'NOVA SCS Mobilidade',
+      kmHoje: 626,
+      kmMes: 27971,
+      metaMes: 20000,
+      viagens: 20,
+    ),
+  ];
+
+  static const List<Veiculo> veiculos = <Veiculo>[
+    Veiculo(
+      prefixo: 'SCS-1042',
+      linha: 'L01',
+      destino: 'Term. Santa Paula',
+      status: 'Em rota',
+    ),
+    Veiculo(
+      prefixo: 'SCS-1043',
+      linha: 'L01',
+      destino: 'Praça Mauá',
+      status: 'Em rota',
+    ),
+    Veiculo(
+      prefixo: 'SCS-2011',
+      linha: 'L02',
+      destino: 'Term. SCS Centro',
+      status: 'Parado',
+    ),
+    Veiculo(
+      prefixo: 'SCS-2012',
+      linha: 'L02',
+      destino: 'Barcelona',
+      status: 'Atenção',
+    ),
+    Veiculo(
+      prefixo: 'SCS-3001',
+      linha: 'L03',
+      destino: 'Fundação',
+      status: 'Em rota',
+    ),
+    Veiculo(
+      prefixo: 'SCS-4001',
+      linha: 'L04',
+      destino: 'Cerâmica',
+      status: 'Atenção',
+    ),
+    Veiculo(
+      prefixo: 'SCS-5001',
+      linha: 'L05',
+      destino: 'Nova Gerti',
+      status: 'Em rota',
+    ),
+    Veiculo(
+      prefixo: 'SCS-6001',
+      linha: 'L06',
+      destino: 'Prosperidade',
+      status: 'Em rota',
     ),
   ];
 
   static const List<DocumentoPdf> documentos = <DocumentoPdf>[
     DocumentoPdf(
-      arquivo: 'relatorio_catraca_01.pdf',
-      remetente: 'operacao@viacaocentral.com',
-      recebidoEm: '28/09 08:12',
+      arquivo: 'Relatório Operacional SET-2026.pdf',
+      empresa: 'AUTOBUS SCS',
       status: 'Processado',
+      data: '15/09/2026 09:12',
+      registros: '2.840',
     ),
     DocumentoPdf(
-      arquivo: 'relatorio_catraca_02.pdf',
-      remetente: 'dados@expressonorte.com',
-      recebidoEm: '28/09 08:40',
-      status: 'Recebido',
+      arquivo: 'Boletim de Gratuidades AGO-2026.pdf',
+      empresa: 'METROPOLITAN',
+      status: 'Processado',
+      data: '15/09/2026 08:45',
+      registros: '1.230',
     ),
     DocumentoPdf(
-      arquivo: 'fechamento_semanal.pdf',
-      remetente: 'financeiro@rodosul.com',
-      recebidoEm: '27/09 19:05',
-      status: 'Falha',
+      arquivo: 'Planilha Km Agosto 2026.pdf',
+      empresa: 'NOVA SCS',
+      status: 'Processado',
+      data: '14/09/2026 18:33',
+      registros: '487',
+    ),
+    DocumentoPdf(
+      arquivo: 'Relatório Receita 14-SET.pdf',
+      empresa: 'AUTOBUS SCS',
+      status: 'Erro',
+      data: '14/09/2026 17:21',
+      registros: '—',
+    ),
+    DocumentoPdf(
+      arquivo: 'Bilhetagem Eletrônica SET.pdf',
+      empresa: 'METROPOLITAN',
+      status: 'Processando',
+      data: '15/09/2026 09:48',
+      registros: '—',
+    ),
+    DocumentoPdf(
+      arquivo: 'GPS Frota 13-SET-2026.pdf',
+      empresa: 'NOVA SCS',
+      status: 'Processado',
+      data: '13/09/2026 22:10',
+      registros: '3.920',
+    ),
+    DocumentoPdf(
+      arquivo: 'Auditoria Gratuidades AGO.pdf',
+      empresa: 'AUTOBUS SCS',
+      status: 'Processado',
+      data: '12/09/2026 14:05',
+      registros: '892',
     ),
   ];
 
-  static const List<PontoSerie> passageirosDiario = <PontoSerie>[
-    PontoSerie('Seg', 41200),
-    PontoSerie('Ter', 43850),
-    PontoSerie('Qua', 44100),
-    PontoSerie('Qui', 42960),
-    PontoSerie('Sex', 46700),
-    PontoSerie('Sáb', 28400),
-    PontoSerie('Dom', 15200),
+  static const List<ModeloRelatorio> modelosRelatorio = <ModeloRelatorio>[
+    ModeloRelatorio(
+      icone: '📊',
+      nome: 'Relatório Executivo',
+      descricao: 'Resumo estratégico para prefeito e gestores',
+    ),
+    ModeloRelatorio(
+      icone: '🚌',
+      nome: 'Relatório Operacional',
+      descricao: 'Indicadores operacionais detalhados',
+    ),
+    ModeloRelatorio(
+      icone: '💰',
+      nome: 'Relatório Financeiro',
+      descricao: 'Receitas, gratuidades e análise financeira',
+    ),
+    ModeloRelatorio(
+      icone: '📋',
+      nome: 'Prestação de Contas',
+      descricao: 'Relatório regulatório para SEMOB-SCS',
+    ),
   ];
 
-  static const List<PontoSerie> passageirosSemanal = <PontoSerie>[
-    PontoSerie('S1', 248000),
-    PontoSerie('S2', 252400),
-    PontoSerie('S3', 244900),
-    PontoSerie('S4', 261300),
-  ];
-
-  static const List<PontoSerie> passageirosMensal = <PontoSerie>[
-    PontoSerie('Mai', 985000),
-    PontoSerie('Jun', 1012000),
-    PontoSerie('Jul', 940500),
-    PontoSerie('Ago', 1045800),
-    PontoSerie('Set', 1006700),
-  ];
-
-  static const List<PontoSerie> receitaPorPeriodo = <PontoSerie>[
-    PontoSerie('Seg', 186400),
-    PontoSerie('Ter', 194200),
-    PontoSerie('Qua', 199000),
-    PontoSerie('Qui', 191500),
-    PontoSerie('Sex', 210300),
-    PontoSerie('Sáb', 128700),
-    PontoSerie('Dom', 68900),
-  ];
-
-  static const List<PontoSerie> receitaPorEmpresa = <PontoSerie>[
-    PontoSerie('Viação Central', 520400),
-    PontoSerie('Expresso Norte', 398100),
-    PontoSerie('Rodo Sul', 360500),
-  ];
-
-  static const List<PontoSerie> receitaPorLinha = <PontoSerie>[
-    PontoSerie('101', 210800),
-    PontoSerie('204', 184300),
-    PontoSerie('318', 152900),
-  ];
-
-  static const List<PontoSerie> creditosVendidos = <PontoSerie>[
-    PontoSerie('Mai', 412000),
-    PontoSerie('Jun', 428500),
-    PontoSerie('Jul', 401200),
-    PontoSerie('Ago', 447800),
-    PontoSerie('Set', 433100),
-  ];
-
-  static const List<PontoSerie> creditosUtilizados = <PontoSerie>[
-    PontoSerie('Mai', 388400),
-    PontoSerie('Jun', 401900),
-    PontoSerie('Jul', 378600),
-    PontoSerie('Ago', 419500),
-    PontoSerie('Set', 405200),
-  ];
-
-  static const List<PontoSerie> kmDiaria = <PontoSerie>[
-    PontoSerie('Seg', 12480),
-    PontoSerie('Ter', 12610),
-    PontoSerie('Qua', 12530),
-    PontoSerie('Qui', 12440),
-    PontoSerie('Sex', 12890),
-    PontoSerie('Sáb', 8720),
-    PontoSerie('Dom', 5140),
-  ];
-
-  static const List<PontoSerie> kmMensal = <PontoSerie>[
-    PontoSerie('Mai', 342000),
-    PontoSerie('Jun', 351500),
-    PontoSerie('Jul', 338900),
-    PontoSerie('Ago', 359400),
-    PontoSerie('Set', 347200),
+  static const List<FonteDados> fontesDados = <FonteDados>[
+    FonteDados(
+      icone: '🗄️',
+      nome: 'Banco de Dados Operacional',
+      status: 'Conectado',
+      protocolo: 'PostgreSQL',
+      detalhe: '4.2M registros',
+      ultimaSync: '15/09/2026 09:52',
+    ),
+    FonteDados(
+      icone: '📡',
+      nome: 'Rastreamento GPS (AVL)',
+      status: 'Conectado',
+      protocolo: 'API REST',
+      detalhe: '48 veículos ativos',
+      ultimaSync: '15/09/2026 09:54',
+    ),
+    FonteDados(
+      icone: '⚙️',
+      nome: 'Bilhetagem Eletrônica',
+      status: 'Conectado',
+      protocolo: 'API SOAP',
+      detalhe: '2.840 validações hoje',
+      ultimaSync: '15/09/2026 09:50',
+    ),
+    FonteDados(
+      icone: '📧',
+      nome: 'E-mails Automáticos (IMAP)',
+      status: 'Conectado',
+      protocolo: 'IMAP/TLS',
+      detalhe: '7 docs recebidos hoje',
+      ultimaSync: '15/09/2026 09:30',
+    ),
+    FonteDados(
+      icone: '🗺️',
+      nome: 'HERE Maps API',
+      status: 'Pendente',
+      protocolo: 'API REST',
+      detalhe: 'Aguardando chave',
+      ultimaSync: '—',
+    ),
+    FonteDados(
+      icone: '🏛️',
+      nome: 'Portal SEMOB-SCS',
+      status: 'Erro',
+      protocolo: 'API REST',
+      detalhe: 'Timeout na autenticação',
+      ultimaSync: '14/09/2026 23:00',
+      erro: 'Timeout na autenticação',
+    ),
+    FonteDados(
+      icone: '📈',
+      nome: 'IBGE — Dados Demográficos',
+      status: 'Conectado',
+      protocolo: 'API REST',
+      detalhe: 'Atualização mensal',
+      ultimaSync: '01/09/2026 00:00',
+    ),
   ];
 
   static const List<String> sugestoesAssistente = <String>[
-    'Qual foi a demanda de passageiros da linha 101 esta semana?',
-    'Compare a receita de catraca entre as empresas no mês atual.',
-    'Quais linhas tiveram queda de quilometragem nos últimos 15 dias?',
+    'Qual linha teve maior queda de passageiros?',
+    'Qual empresa apresentou menor receita no mês?',
+    'Existe alguma anomalia operacional hoje?',
+    'Qual a previsão de demanda para a próxima semana?',
+    'Gerar relatório executivo para a gestão',
+    'Comparar IPK de setembro vs agosto',
   ];
+
+  static List<PontoSerie> get receitaPorEmpresa => <PontoSerie>[
+        for (final Empresa e in empresas) PontoSerie(e.sigla, e.receita),
+      ];
+
+  static List<PontoSerie> get passageirosPorLinha => <PontoSerie>[
+        for (final LinhaOnibus l in linhas)
+          PontoSerie(l.codigo, l.viagens * 280),
+      ];
+
+  static List<PontoSerie> get receitaPorLinha => <PontoSerie>[
+        for (final LinhaOnibus l in linhas) PontoSerie(l.codigo, l.viagens * 640),
+      ];
+
+  static List<PontoSerie> get kmPorLinha => <PontoSerie>[
+        for (final LinhaOnibus l in linhas)
+          PontoSerie(l.codigo, l.kmHoje.toDouble()),
+      ];
+
+  static List<PontoSerie> get kmMesPorLinha => <PontoSerie>[
+        for (final LinhaOnibus l in linhas)
+          PontoSerie(l.codigo, l.kmMes.toDouble()),
+      ];
+
+  static List<PontoSerie> get metaMesPorLinha => <PontoSerie>[
+        for (final LinhaOnibus l in linhas)
+          PontoSerie(l.codigo, l.metaMes.toDouble()),
+      ];
 }

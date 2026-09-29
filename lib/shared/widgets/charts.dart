@@ -38,6 +38,7 @@ class GraficoCard extends StatelessWidget {
 }
 
 Widget _rotuloEixoX(List<PontoSerie> serie, double value, TitleMeta meta) {
+  if (value != value.roundToDouble()) return const SizedBox.shrink();
   final int i = value.round();
   if (i < 0 || i >= serie.length) return const SizedBox.shrink();
   return SideTitleWidget(
@@ -61,6 +62,7 @@ FlTitlesData _titulos(List<PontoSerie> serie) => FlTitlesData(
         sideTitles: SideTitles(
           showTitles: true,
           reservedSize: 28,
+          interval: (serie.length / 8).ceilToDouble(),
           getTitlesWidget: (double v, TitleMeta m) => _rotuloEixoX(serie, v, m),
         ),
       ),
@@ -86,22 +88,31 @@ class GraficoLinha extends StatelessWidget {
     super.key,
     required this.serie,
     this.comparacao,
+    this.serieSecundaria,
     this.cor = AppColors.primary,
+    this.corSecundaria = AppColors.accent,
   });
 
   final List<PontoSerie> serie;
+
+  /// Mesma metrica no periodo anterior (linha tracejada).
   final List<PontoSerie>? comparacao;
+
+  /// Segunda metrica sobreposta (ex.: pagantes x gratuidades).
+  final List<PontoSerie>? serieSecundaria;
   final Color cor;
+  final Color corSecundaria;
 
   LineChartBarData _barra(List<PontoSerie> dados, Color cor, bool tracejada) {
     return LineChartBarData(
       spots: <FlSpot>[
-        for (int i = 0; i < dados.length; i++) FlSpot(i.toDouble(), dados[i].valor),
+        for (int i = 0; i < dados.length; i++)
+          FlSpot(i.toDouble(), dados[i].valor),
       ],
       isCurved: true,
       curveSmoothness: 0.25,
       color: cor,
-      barWidth: 3,
+      barWidth: 2.5,
       dashArray: tracejada ? <int>[6, 4] : null,
       dotData: const FlDotData(show: false),
       belowBarData: BarAreaData(
@@ -125,8 +136,10 @@ class GraficoLinha extends StatelessWidget {
         lineTouchData: const LineTouchData(handleBuiltInTouches: true),
         lineBarsData: <LineChartBarData>[
           _barra(serie, cor, false),
+          if (serieSecundaria != null && serieSecundaria!.isNotEmpty)
+            _barra(serieSecundaria!, corSecundaria, false),
           if (comparacao != null && comparacao!.isNotEmpty)
-            _barra(comparacao!, AppColors.textSecondary, true),
+            _barra(comparacao!, AppColors.textMuted, true),
         ],
       ),
     );

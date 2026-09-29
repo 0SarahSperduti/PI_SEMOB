@@ -7,14 +7,15 @@ import 'formatters.dart';
 // Filtro de periodo (usado por Dashboard, Demanda, Receita, Quilometragem)
 // ---------------------------------------------------------------------------
 
-enum PeriodoTipo { hoje, semana, mes, ultimos15, personalizado }
+enum PeriodoTipo { hoje, ultimos7, ultimos15, ultimos30, mesAtual, personalizado }
 
 extension PeriodoTipoLabel on PeriodoTipo {
   String get label => switch (this) {
         PeriodoTipo.hoje => 'Hoje',
-        PeriodoTipo.semana => 'Semana',
-        PeriodoTipo.mes => 'Mês',
-        PeriodoTipo.ultimos15 => 'Últimos 15 dias',
+        PeriodoTipo.ultimos7 => 'Últimos 7d',
+        PeriodoTipo.ultimos15 => 'Últimos 15d',
+        PeriodoTipo.ultimos30 => 'Últimos 30d',
+        PeriodoTipo.mesAtual => 'Mês Atual',
         PeriodoTipo.personalizado => 'Personalizado',
       };
 }
@@ -32,12 +33,14 @@ class FiltroPeriodo {
     final DateTime hoje = DateUtils.dateOnly(DateTime.now());
     final DateTime inicio = switch (tipo) {
       PeriodoTipo.hoje => hoje,
-      PeriodoTipo.semana => hoje.subtract(Duration(days: hoje.weekday - 1)),
-      PeriodoTipo.mes => DateTime(hoje.year, hoje.month),
+      PeriodoTipo.ultimos7 => hoje.subtract(const Duration(days: 6)),
       PeriodoTipo.ultimos15 => hoje.subtract(const Duration(days: 14)),
+      PeriodoTipo.ultimos30 => hoje.subtract(const Duration(days: 29)),
+      PeriodoTipo.mesAtual => DateTime(hoje.year, hoje.month),
       PeriodoTipo.personalizado => hoje,
     };
-    return FiltroPeriodo(tipo: tipo, inicio: inicio, fim: hoje, comparar: comparar);
+    return FiltroPeriodo(
+        tipo: tipo, inicio: inicio, fim: hoje, comparar: comparar);
   }
 
   final PeriodoTipo tipo;
@@ -66,7 +69,7 @@ class FiltroPeriodo {
 
 class FiltroPeriodoNotifier extends Notifier<FiltroPeriodo> {
   @override
-  FiltroPeriodo build() => FiltroPeriodo.deTipo(PeriodoTipo.hoje);
+  FiltroPeriodo build() => FiltroPeriodo.deTipo(PeriodoTipo.ultimos30);
 
   void selecionar(PeriodoTipo tipo) {
     state = FiltroPeriodo.deTipo(tipo, comparar: state.comparar);

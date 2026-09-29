@@ -10,9 +10,9 @@ void main() {
   tearDown(() => container.dispose());
 
   group('filtroPeriodoProvider', () {
-    test('inicia em "Hoje" e sem comparacao', () {
+    test('inicia em "Últimos 30d" e sem comparação', () {
       final FiltroPeriodo filtro = container.read(filtroPeriodoProvider);
-      expect(filtro.tipo, PeriodoTipo.hoje);
+      expect(filtro.tipo, PeriodoTipo.ultimos30);
       expect(filtro.comparar, isFalse);
     });
 

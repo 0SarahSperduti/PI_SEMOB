@@ -52,6 +52,8 @@ class AppMetricCard extends StatelessWidget {
     required this.valor,
     this.icone,
     this.variacao,
+    this.variacaoLabel = 'vs período anterior',
+    this.detalhe,
     this.cor,
   });
 
@@ -61,69 +63,93 @@ class AppMetricCard extends StatelessWidget {
 
   /// Variacao percentual em relacao ao periodo anterior (comparacao).
   final double? variacao;
+  final String variacaoLabel;
+
+  /// Texto auxiliar no lugar da variacao (ex.: "22% dos passageiros").
+  final String? detalhe;
   final Color? cor;
 
   @override
   Widget build(BuildContext context) {
     final Color destaque = cor ?? AppColors.primary;
     return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
+              Expanded(
+                child: Text(
+                  titulo.toUpperCase(),
+                  style: AppTextStyles.overline,
+                  maxLines: 2,
+                ),
+              ),
               if (icone != null) ...<Widget>[
+                const SizedBox(width: AppSpacing.sm),
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
                     color: destaque.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(AppSpacing.sm),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   ),
-                  child: Icon(icone, size: 18, color: destaque),
+                  child: Icon(icone, size: 16, color: destaque),
                 ),
-                const SizedBox(width: AppSpacing.sm),
               ],
-              Expanded(
-                child: Text(
-                  titulo,
-                  style: AppTextStyles.caption,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
             ],
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: AppSpacing.md),
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(valor, style: AppTextStyles.metric),
           ),
           if (variacao != null) ...<Widget>[
-            const SizedBox(height: AppSpacing.xs),
-            Row(
-              children: <Widget>[
-                Icon(
-                  variacao! >= 0 ? Icons.trending_up : Icons.trending_down,
-                  size: 16,
-                  color: variacao! >= 0 ? AppColors.success : AppColors.danger,
-                ),
-                const SizedBox(width: AppSpacing.xs),
-                Expanded(
-                  child: Text(
-                    '${variacao!.abs().toStringAsFixed(1)}% vs. período anterior',
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.caption.copyWith(
-                      color: variacao! >= 0 ? AppColors.success : AppColors.danger,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            const SizedBox(height: AppSpacing.sm),
+            _Variacao(valor: variacao!, label: variacaoLabel),
+          ] else if (detalhe != null) ...<Widget>[
+            const SizedBox(height: AppSpacing.sm),
+            Text(detalhe!, style: AppTextStyles.caption),
           ],
         ],
       ),
+    );
+  }
+}
+
+class _Variacao extends StatelessWidget {
+  const _Variacao({required this.valor, required this.label});
+
+  final double valor;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool positiva = valor >= 0;
+    final Color cor = positiva ? AppColors.success : AppColors.danger;
+
+    return Row(
+      children: <Widget>[
+        Icon(positiva ? Icons.arrow_upward : Icons.arrow_downward,
+            size: 13, color: cor),
+        const SizedBox(width: AppSpacing.xs),
+        Text(
+          '${valor.abs().toStringAsFixed(1)}%',
+          style: AppTextStyles.caption
+              .copyWith(color: cor, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(width: AppSpacing.xs),
+        Expanded(
+          child: Text(
+            label,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -287,13 +313,16 @@ class EmptyState extends StatelessWidget {
 
 /// Grade responsiva usada para os cards de indicadores.
 class GradeCards extends StatelessWidget {
-  const GradeCards({super.key, required this.itens});
+  const GradeCards({super.key, required this.itens, this.colunasDesktop = 4});
 
   final List<Widget> itens;
+  final int colunasDesktop;
 
   @override
   Widget build(BuildContext context) {
-    final int colunas = Responsivo.colunas(context);
+    final int colunas = Responsivo.desktop(context)
+        ? colunasDesktop
+        : Responsivo.colunas(context);
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final double largura =
@@ -322,16 +351,16 @@ class AppLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget marca = Container(
-      height: compacto ? 38 : 48,
-      width: compacto ? 38 : 48,
+      height: compacto ? 36 : 40,
+      width: compacto ? 36 : 40,
       decoration: BoxDecoration(
-        color: escuro ? AppColors.primary : Colors.white,
-        borderRadius: BorderRadius.circular(AppSpacing.radius),
+        color: escuro ? AppColors.sidebar : Colors.white,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       ),
       child: Icon(
-        Icons.insights,
-        size: compacto ? 20 : 24,
-        color: escuro ? Colors.white : AppColors.brandTop,
+        Icons.pets,
+        size: compacto ? 18 : 20,
+        color: escuro ? Colors.white : AppColors.sidebar,
       ),
     );
 
@@ -341,7 +370,7 @@ class AppLogo extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         marca,
-        const SizedBox(width: AppSpacing.md),
+        const SizedBox(width: AppSpacing.sm),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -349,17 +378,18 @@ class AppLogo extends StatelessWidget {
             Text(
               'Ferret',
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 19,
                 fontWeight: FontWeight.w700,
+                height: 1.1,
                 color: escuro ? AppColors.textPrimary : Colors.white,
               ),
             ),
             Text(
               'BI PLATFORM',
               style: AppTextStyles.overline.copyWith(
-                fontSize: 11,
+                fontSize: 10,
                 letterSpacing: 1.4,
-                color: escuro ? AppColors.success : AppColors.accent,
+                color: AppColors.accent,
               ),
             ),
           ],
