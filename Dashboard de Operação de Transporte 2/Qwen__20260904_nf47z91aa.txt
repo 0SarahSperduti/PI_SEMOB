@@ -1,0 +1,54 @@
+dashboard-operacao-transporte/
+│
+├── README.md
+├── LICENSE
+├── docker-compose.yml
+│
+├── docs/
+│   ├── architecture/
+│   │   ├── architecture.md
+│   │   └── decisions/          # ADRs
+│   ├── requirements/
+│   │   ├── functional.md
+│   │   └── non-functional.md
+│   └── smart-data/
+│       └── technical-questions.md
+│
+├── packages/
+│   ├── backend/                # API Dart Frog
+│   │   ├── bin/
+│   │   ├── lib/
+│   │   │   ├── routes/
+│   │   │   ├── models/
+│   │   │   ├── services/
+│   │   │   ├── statistics/
+│   │   │   └── anomalies/
+│   │   └── test/
+│   │
+│   ├── frontend/               # Flutter Web
+│   │   ├── lib/
+│   │   │   ├── screens/
+│   │   │   ├── widgets/
+│   │   │   ├── services/
+│   │   │   └── models/
+│   │   └── test/
+│   │
+│   ├── ingestion/              # Scripts de ingestão
+│   │   ├── bin/
+│   │   │   ├── generate_synthetic_data.dart
+│   │   │   └── ingest_smart_data.dart
+│   │   └── lib/
+│   │
+│   └── shared/                 # Código compartilhado
+│       └── lib/
+│           └── models/
+│
+├── data/
+│   ├── raw/                    # Bronze
+│   ├── staging/                # Silver
+│   ├── curated/                # Gold
+│   └── sample/                 # Dados sintéticos
+│
+└── tests/
+    ├── integration/
+    └── e2e/

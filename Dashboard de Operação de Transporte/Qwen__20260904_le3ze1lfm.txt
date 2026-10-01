@@ -1,0 +1,19 @@
+Smart Data / Sintéticos
+        ↓
+   INGESTÃO (Dart)
+        ↓
+   BRONZE (raw imutável)
+        ↓
+   VALIDAÇÃO / QUALIDADE
+        ↓
+   SILVER (limpo / deduplicado)
+        ↓
+   TRANSFORMAÇÃO
+        ↓
+   GOLD (modelo analítico)
+        ↓
+   ANALYTICS (estatística + anomalias)
+        ↓
+   API REST (Dart Frog)
+        ↓
+   DASHBOARD (Flutter Web)

@@ -1,0 +1,1 @@
+Fonte → Ingestão → Bronze → Qualidade → Silver → Transformação → Gold → Analytics → API → Dashboard

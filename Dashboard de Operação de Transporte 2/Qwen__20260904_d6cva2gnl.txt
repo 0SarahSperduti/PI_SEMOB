@@ -1,0 +1,7 @@
+GET /api/overview
+GET /api/operations
+GET /api/trips
+GET /api/passengers
+GET /api/anomalies
+GET /api/lines
+GET /api/vehicles
